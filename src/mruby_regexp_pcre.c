@@ -25,7 +25,7 @@ struct mrb_matchdata {
 void
 mrb_regexp_free(mrb_state *mrb, void *ptr)
 {
-  struct mrb_regexp_pcre *mrb_re = ptr;
+  struct mrb_regexp_pcre *mrb_re = (mrb_regexp_pcre*)ptr;
 
   if (mrb_re != NULL) {
     if (mrb_re->re != NULL) {
@@ -38,7 +38,7 @@ mrb_regexp_free(mrb_state *mrb, void *ptr)
 static void
 mrb_matchdata_free(mrb_state *mrb, void *ptr)
 {
-  struct mrb_matchdata *mrb_md = ptr;
+  struct mrb_matchdata *mrb_md = (mrb_matchdata*)ptr;
 
   if (mrb_md != NULL) {
     if (mrb_md->ovector != NULL) {
@@ -107,7 +107,7 @@ regexp_pcre_initialize(mrb_state *mrb, mrb_value self)
 
   mrb_get_args(mrb, "S|o", &source, &opt);
 
-  reg = mrb_malloc(mrb, sizeof(struct mrb_regexp_pcre));
+  reg = (mrb_regexp_pcre*)mrb_malloc(mrb, sizeof(struct mrb_regexp_pcre));
   reg->re = NULL;
   DATA_PTR(self) = reg;
 
@@ -163,7 +163,7 @@ regexp_pcre_match(mrb_state *mrb, mrb_value self)
     return mrb_nil_value();
   }
   matchlen = ccount + 1;
-  match = mrb_malloc(mrb, sizeof(int) * matchlen * 3);
+  match = (int*)mrb_malloc(mrb, sizeof(int) * matchlen * 3);
 
   extra.flags = PCRE_EXTRA_MATCH_LIMIT_RECURSION;
   extra.match_limit_recursion = 1000;
@@ -266,14 +266,14 @@ mrb_matchdata_init_copy(mrb_state *mrb, mrb_value copy)
   }
 
   mrb_md_copy = (struct mrb_matchdata *)mrb_malloc(mrb, sizeof(*mrb_md_copy));
-  mrb_md_src  = DATA_PTR(src);
+  mrb_md_src  = (mrb_matchdata*)DATA_PTR(src);
 
   if (mrb_md_src->ovector == NULL) {
     mrb_md_copy->ovector = NULL;
     mrb_md_copy->length = -1;
   } else {
     vecsize = sizeof(int) * mrb_md_src->length * 3;
-    mrb_md_copy->ovector = mrb_malloc(mrb, vecsize);
+    mrb_md_copy->ovector = (int*)mrb_malloc(mrb, vecsize);
     memcpy(mrb_md_copy->ovector, mrb_md_src->ovector, vecsize);
     mrb_md_copy->length = mrb_md_src->length;
   }
